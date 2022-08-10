@@ -30,7 +30,7 @@ async def createUser(request: UserBase, db: Session = Depends(get_db)):
         raise HTTPException(400, detail='creating process has problems')
 
 
-@router.patch('/edit')
+@router.put('/edit')
 async def updateUser(request: UserBase, current_user: UserBase = Depends(get_current_user), db: Session = Depends(get_db)):
     update_user_result = db_user.updateUser(request, current_user.token, db)
     if update_user_result == 202:
