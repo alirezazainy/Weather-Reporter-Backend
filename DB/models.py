@@ -16,3 +16,18 @@ class User(Base):
     email = Column(String)
     token = Column(String)
     reqlimit = Column(Integer)
+
+    
+class Admin(Base):
+    """
+    Admin Table ORM model
+    generate Admin table
+    """
+    __tablename__ = "Admins"
+
+    ID = Column(Integer, index=True, primary_key=True)
+    AID = Column(String)
+    password = Column(String)
+    email = Column(String)
+    token = Column(String)
+    

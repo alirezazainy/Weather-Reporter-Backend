@@ -1,4 +1,4 @@
-from DB.models import User
+from DB.models import User, Admin
 from schemas import UserBase, UserAuth, UserDisplay
 from sqlalchemy.orm import Session
 from DB.hash import Hash
@@ -39,7 +39,7 @@ def createUser(request: UserBase, db: Session):
             result = 406
             return result
     except:
-        raise HTTPException(400, datail='something went wrong')
+        raise HTTPException(400, detail='something went wrong')
 
 
 def getUserToken(request: UserAuth, db: Session):
@@ -65,6 +65,9 @@ def getUser(username: str, db: Session):
     Returns User Information From Database with Check primary username
     """
     user = db.query(User).filter(User.username == username).first()
+    if not user:
+        user = db.query(Admin).filter(Admin.AID == username).first()
+        return user
     return user
 
 
@@ -101,3 +104,62 @@ def updateUser(request: UserBase, token: str, db: Session):
         db.refresh(user)
         result = 202
         return result
+
+
+def getAllUsers(db: Session):
+    return db.query(User).all()
+
+
+def createAdmin(request: UserBase, db: Session):
+    """
+    Create a Admin and save it to the Database 
+    this Func check the Email and UserName if Registered couldn't Register again with same information
+    and save the User in the Database Admin Table
+
+    Returns a status code if created 201 and else 406
+    """
+    # Handling Exceptions
+    try:
+        # Check Email and Username
+        if not db.query(Admin).filter(Admin.AID == request.username or Admin.email == request.email).first():
+            # Register new User
+            admin = Admin(
+                AID="@"+request.username,
+                password=Hash.bcrypt(request.password),
+                email=request.email,
+                token=None
+            )
+
+            db.add(admin)
+            db.commit()
+            db.refresh(admin)
+
+            result = 201
+            return result
+        # If Username or Email Registered once User can't Register again with them
+        else:
+            result = 406
+            return result
+    except:
+        raise HTTPException(400, detail='something went wrong')
+
+
+def getAdminToken(request: UserAuth, db: Session):
+    """
+    Create a Admin and save it to the Database 
+    this Func check the Email and UserName if Registered couldn't Register again with same information
+    and save the Admin in the Database Admins Table
+
+    Returns a status code if created 201 and else 406
+    """
+    admin = db.query(Admin).filter(Admin.AID == "@"+request.username).first()
+    if not admin:
+        raise HTTPException(401, detail='invalid credentials')
+    elif Hash.verify(admin.password, request.password):
+        access_token = create_access_token(data={'sub': admin.AID})
+        admin.token = access_token
+        db.commit()
+        db.refresh(admin)
+        return admin.token
+    else:
+        raise HTTPException(401, detail='invalid credentials')

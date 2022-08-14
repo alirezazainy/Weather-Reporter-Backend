@@ -5,11 +5,11 @@ from jose import JWTError, jwt
 from sqlalchemy.orm import Session
 from DB.database import get_db
 from DB import db_user
-from schemas import UserBase 
+from schemas import UserBase
 # Authorization Processor
 
-# Generate OAuth2 Bearer Instance 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+# Generate OAuth2 Bearer Instance
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
 # Secret Key and other details
 SECRET_KEY = "d6ad91a1df806697cca646fdb40a950d"
@@ -54,3 +54,23 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
 
     return user
 
+
+def isAdmin(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+    """
+    Check the token and Returns is Admin or not
+    """
+    error_credential = HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                                     detail='invalid credentials',
+                                     headers={'WWW-authenticate': 'bearer'})
+
+    try:
+        _dict = jwt.decode(token, SECRET_KEY, algorithms=ALGORITHM)
+        username = _dict.get('sub')
+        if not username:
+            raise error_credential
+    except JWTError:
+        raise error_credential
+
+    user = db_user.getUser(username, db)
+
+    return user
