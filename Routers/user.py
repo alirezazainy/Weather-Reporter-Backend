@@ -1,9 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Security
 from sqlalchemy.orm import Session
 from DB.database import get_db
 from DB import db_user
 from schemas import UserBase
-from authorization import oauth2_scheme
 from authorization import get_current_user
 # User Router
 
@@ -31,7 +30,7 @@ async def createUser(request: UserBase, db: Session = Depends(get_db)):
 
 
 @router.put('/edit')
-async def updateUser(request: UserBase, current_user: UserBase = Depends(get_current_user), db: Session = Depends(get_db)):
+async def updateUser(request: UserBase, current_user: UserBase = Security(get_current_user, scopes=["User"]), db: Session = Depends(get_db)):
     """
     Update user credentials 
 

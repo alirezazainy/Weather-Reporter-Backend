@@ -1,10 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Security
 from sqlalchemy.orm import Session
 from DB.database import get_db
 from DB import db_user
-from schemas import UserBase
+from schemas import UserBase, UserDisplay
 from authorization import oauth2_scheme
-from authorization import isAdmin
+from authorization import get_current_user
 # Admin Router
 
 # Generate Router Instance
@@ -30,19 +30,22 @@ async def setAdmin(request: UserBase, db: Session = Depends(get_db)):
         raise HTTPException(400, detail='creating process has problems')
 
 
-@router.get('/users')
-async def getAllUsers(current_user:UserBase = Depends(isAdmin), db: Session = Depends(get_db)):
+@router.get('/users', response_model=list[UserDisplay])
+async def getAllUsers(current_user: UserBase = Security(get_current_user, scopes=["105"]), db: Session = Depends(get_db)):
     """
     get All Users to admin 
     """
-    return db_user.getAllUsers(db)
+    users = db_user.getAllUsers(db)
+    return users
 
 
-@router.patch("/limits")
-async def changeLimits(current_user:UserBase = Depends(isAdmin), db: Session = Depends(get_db)):
+@router.patch("/limits/{user_id}")
+async def changeLimits(limit: int, user_id: int, current_user: UserBase = Security(get_current_user, scopes=["105"]), db: Session = Depends(get_db)):
     """
     This function helps Admin to Change Users Request limits 
 
     Returns a status code
     """
-    pass
+    result = db_user.changeLimits(limit, user_id, db)
+    if result == 202:
+        raise HTTPException(202, detail='limit changed')

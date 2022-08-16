@@ -1,5 +1,5 @@
 from DB.database import Base
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Boolean
 from sqlalchemy.orm import relationship
 # Database Tables ORM Models
 
@@ -16,18 +16,8 @@ class User(Base):
     email = Column(String)
     token = Column(String)
     reqlimit = Column(Integer)
+    isAdmin = Column(Boolean)
 
     
-class Admin(Base):
-    """
-    Admin Table ORM model
-    generate Admin table
-    """
-    __tablename__ = "Admins"
 
-    ID = Column(Integer, index=True, primary_key=True)
-    AID = Column(String)
-    password = Column(String)
-    email = Column(String)
-    token = Column(String)
     

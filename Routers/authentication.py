@@ -24,17 +24,3 @@ async def get_token(request: OAuth2PasswordRequestForm = Depends(), db: Session 
             'access_token': access_token,
             'type_token': 'bearer'
         }
-@router.post("/105/login")
-async def get_token(request: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
-    """
-    Gives Generated token from 'getAdminToken' Method to UI/UX in a Dictionary
-    """
-    access_token = db_user.getAdminToken(request, db)
-    if not access_token:
-        raise HTTPException(400, detail='invalid credentials')
-
-    else:
-        return {
-            'access_token': access_token,
-            'type_token': 'bearer'
-            }

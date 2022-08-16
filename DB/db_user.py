@@ -1,5 +1,5 @@
-from DB.models import User, Admin
-from schemas import UserBase, UserAuth, UserDisplay
+from DB.models import User
+from schemas import UserBase, UserAuth
 from sqlalchemy.orm import Session
 from DB.hash import Hash
 from authorization import create_access_token
@@ -25,7 +25,8 @@ def createUser(request: UserBase, db: Session):
                 password=Hash.bcrypt(request.password),
                 email=request.email,
                 token=None,
-                reqlimit=3
+                reqlimit=3,
+                isAdmin=False
             )
 
             db.add(user)
@@ -51,7 +52,10 @@ def getUserToken(request: UserAuth, db: Session):
     if not user:
         raise HTTPException(401, detail='invalid credentials')
     elif Hash.verify(user.password, request.password):
-        access_token = create_access_token(data={'sub': user.username})
+        if user.isAdmin: 
+            access_token = create_access_token(data={"sub": user.username, "scopes": ['105','User']})
+        else:
+            access_token = create_access_token(data={"sub": user.username, "scopes": ['User']})
         user.token = access_token
         db.commit()
         db.refresh(user)
@@ -66,8 +70,7 @@ def getUser(username: str, db: Session):
     """
     user = db.query(User).filter(User.username == username).first()
     if not user:
-        user = db.query(Admin).filter(Admin.AID == username).first()
-        return user
+        raise HTTPException(404, detail='user not found')
     return user
 
 
@@ -107,7 +110,8 @@ def updateUser(request: UserBase, token: str, db: Session):
 
 
 def getAllUsers(db: Session):
-    return db.query(User).all()
+    users = db.query(User).all()
+    return users
 
 
 def createAdmin(request: UserBase, db: Session):
@@ -121,18 +125,20 @@ def createAdmin(request: UserBase, db: Session):
     # Handling Exceptions
     try:
         # Check Email and Username
-        if not db.query(Admin).filter(Admin.AID == request.username or Admin.email == request.email).first():
+        if not db.query(User).filter(User.username == request.username or User.email == request.email).first():
             # Register new User
-            admin = Admin(
-                AID="@"+request.username,
+            user = User(
+                username=request.username,
                 password=Hash.bcrypt(request.password),
                 email=request.email,
-                token=None
+                token=None,
+                reqlimit=0,
+                isAdmin=True
             )
 
-            db.add(admin)
+            db.add(user)
             db.commit()
-            db.refresh(admin)
+            db.refresh(user)
 
             result = 201
             return result
@@ -143,23 +149,14 @@ def createAdmin(request: UserBase, db: Session):
     except:
         raise HTTPException(400, detail='something went wrong')
 
-
-def getAdminToken(request: UserAuth, db: Session):
-    """
-    Create a Admin and save it to the Database 
-    this Func check the Email and UserName if Registered couldn't Register again with same information
-    and save the Admin in the Database Admins Table
-
-    Returns a status code if created 201 and else 406
-    """
-    admin = db.query(Admin).filter(Admin.AID == "@"+request.username).first()
-    if not admin:
-        raise HTTPException(401, detail='invalid credentials')
-    elif Hash.verify(admin.password, request.password):
-        access_token = create_access_token(data={'sub': admin.AID})
-        admin.token = access_token
+def changeLimits(limit:int,user_id: int, db:Session):
+    try:
+        user = db.query(User).filter(User.ID == user_id).first()
+        user.reqlimit = limit
         db.commit()
-        db.refresh(admin)
-        return admin.token
-    else:
-        raise HTTPException(401, detail='invalid credentials')
+        db.refresh(user)
+        result = 202
+        return result
+    except:
+        raise HTTPException(400, detail= 'something went wrong')
+
