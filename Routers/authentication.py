@@ -7,7 +7,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 # Authentication Router
 
 # Generate Router Instance
-router = APIRouter(tags=['authentication'])
+router = APIRouter(tags=['Authentication'])
 
 
 @router.post("/login")

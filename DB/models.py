@@ -18,6 +18,19 @@ class User(Base):
     reqlimit = Column(Integer)
     isAdmin = Column(Boolean)
 
-    
+class City(Base):
+    """
+    Cities Table ORM model
+    generate Cities table
+    """
+    __tablename__ = "Cities"
+
+    ID = Column(Integer, index=True, primary_key=True)
+    cityname = Column(String)
+    persianname = Column(String)
+    humidity = Column(Integer)
+    temperature = Column(Integer)
+    windspeed = Column(Integer)
+
 
     

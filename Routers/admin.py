@@ -8,7 +8,7 @@ from authorization import get_current_user
 # Admin Router
 
 # Generate Router Instance
-router = APIRouter(prefix="/105", tags=['admin'])
+router = APIRouter(prefix="/105", tags=['Admin'])
 
 
 @router.post("/create")
