@@ -39,5 +39,42 @@ class UserAuth(BaseModel):
 
 
 class TokenData(BaseModel):
+    """
+    Response User Token and Auth Data 
+    """
     username: Union[str, None] = None
     scopes: List[str] = []
+
+
+class CityBase(BaseModel):
+    """
+    Request City Data
+    """
+    persianname: str
+    humidity: str
+    temperature: str
+    windspeed: str
+
+
+class CityDisplay(BaseModel):
+    """
+    Response City Data
+    """
+    ID: int
+    persianname: str
+    humidity: str
+    temperature: str
+    windspeed: str
+
+    class Config:
+        orm_mode = True
+
+
+class CityReq(BaseModel):
+    """
+    Requests an ID to Display City
+    """
+    ID: List[int] = ...
+
+    class Config:
+        orm_mode = True

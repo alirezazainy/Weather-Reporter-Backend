@@ -30,7 +30,7 @@ async def setAdmin(request: UserBase, db: Session = Depends(get_db)):
         raise HTTPException(400, detail='creating process has problems')
 
 
-@router.get('/users', response_model=list[UserDisplay])
+@router.get("/users", response_model=list[UserDisplay])
 async def getAllUsers(current_user: UserBase = Security(get_current_user, scopes=["105"]), db: Session = Depends(get_db)):
     """
     get All Users to admin 

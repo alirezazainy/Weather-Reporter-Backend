@@ -28,9 +28,9 @@ class City(Base):
     ID = Column(Integer, index=True, primary_key=True)
     cityname = Column(String)
     persianname = Column(String)
-    humidity = Column(Integer)
-    temperature = Column(Integer)
-    windspeed = Column(Integer)
+    humidity = Column(String)
+    temperature = Column(String)
+    windspeed = Column(String)
 
 
     

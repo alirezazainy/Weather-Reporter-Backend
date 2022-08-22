@@ -12,7 +12,7 @@ Base = declarative_base()
 sessionlocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
 
 
-def get_db():
+async def get_db():
     """
     Database Session Instance Generator
     Returns an Instance of Database Session
