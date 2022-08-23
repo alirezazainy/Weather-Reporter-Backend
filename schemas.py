@@ -11,6 +11,8 @@ class UserBase(BaseModel):
     username: str
     password: str
     email: str
+    isAdmin: bool
+    reqlimit: int
 
 
 class UserDisplay(BaseModel):

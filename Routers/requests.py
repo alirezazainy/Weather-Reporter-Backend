@@ -8,11 +8,12 @@ from authorization import get_current_user
 from schemas import UserBase, UserDisplay
 from authorization import oauth2_scheme
 from Sources.SheetGenerator.sheetgenerator import newExcel
-
 # Requests Router
 
 # Generate Router Instance
 router = APIRouter(prefix="/request", tags=['Request'])
+
+# Background Task of Get info from irimo.ir
 
 
 def scheduler(db: Session):
@@ -31,7 +32,13 @@ async def getCitiesWeather(task: BackgroundTasks, current_user: UserBase = Secur
     """
     task.add_task(scheduler, db)
     cities = getCities(db)
+    if not current_user.isAdmin:
+        if current_user.reqlimit > 0:
+            current_user.reqlimit -= 1
+        else:
+            raise HTTPException(403, detail='your requests was on limit')
     return cities
+
 
 @router.post("/weather/custom", response_model=list[CityDisplay])
 async def getCityWeather(request: CityReq, task: BackgroundTasks, current_user: UserBase = Security(get_current_user, scopes=["User"]), db: Session = Depends(get_db)):
@@ -41,6 +48,11 @@ async def getCityWeather(request: CityReq, task: BackgroundTasks, current_user: 
     """
     task.add_task(scheduler, db)
     cities = getaCity(request, db)
+    if not current_user.isAdmin:
+        if current_user.reqlimit > 0:
+            current_user.reqlimit -= 1
+        else:
+            raise HTTPException(403, detail='your requests was on limit')
     return cities
 
 
@@ -53,5 +65,9 @@ async def getWeatherExcel(request: CityReq, task: BackgroundTasks, current_user:
     task.add_task(scheduler, db)
     cities = getaCity(request, db)
     code = newExcel(current_user.username, cities)
-    return FileResponse("C:\\Users\\rayan\\Desktop\\Weather Reporter\\Back-End (FastAPI)\\"+code, media_type='application/octet-stream',filename=code)
-
+    if not current_user.isAdmin:
+        if current_user.reqlimit > 0:
+            current_user.reqlimit -= 1
+        else:
+            raise HTTPException(403, detail='your requests was on limit')
+    return FileResponse("C:\\Users\\rayan\\Desktop\\Weather Reporter\\Back-End (FastAPI)\\Files\\"+code, media_type='application/octet-stream', filename=code)

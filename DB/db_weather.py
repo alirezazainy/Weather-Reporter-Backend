@@ -42,7 +42,7 @@ def reqCityInfo(parsedstr: str = parse()):
             cit.pop(0)
             cit.pop(3)
             citylist.append(cit)
-        i = + 1
+        i += 1
     return citylist
 
 
