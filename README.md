@@ -1,6 +1,6 @@
 # Weather-Reporter-Backend
 
-<<<<<<< HEAD
+
 An API help Farmers to get information about Islamic Republic Iran weather 
 =======
 An API help Farmers to get information about Islamic Republic of Iran weather 
